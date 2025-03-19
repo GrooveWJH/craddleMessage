@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理后台 - 摇篮留言服务</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="{{ url_for('index') }}" class="navbar-brand">摇篮留言</a>
+            <div class="nav-links">
+                <a href="{{ url_for('index') }}">返回首页</a>
+                <a href="{{ url_for('logout') }}">退出登录</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="card fade-in">
+                <h2 class="card-title">系统概览</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ stats.userCount }}</div>
+                        <div class="stat-label">总用户数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ stats.messageCount }}</div>
+                        <div class="stat-label">总留言数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ stats.activeMessages }}</div>
+                        <div class="stat-label">活跃留言数</div>
+                    </div>
+                </div>
+
+                <h3 style="margin: 2rem 0 1rem;">预警级别分布</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="warning-badge warning-1">第一级</div>
+                        <div class="stat-number">{{ stats.warningLevels.level1 }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="warning-badge warning-2">第二级</div>
+                        <div class="stat-number">{{ stats.warningLevels.level2 }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="warning-badge warning-3">第三级</div>
+                        <div class="stat-number">{{ stats.warningLevels.level3 }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="warning-badge warning-4">第四级</div>
+                        <div class="stat-number">{{ stats.warningLevels.level4 }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="warning-badge warning-5">最终预警</div>
+                        <div class="stat-number">{{ stats.warningLevels.level5 }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card fade-in">
+                <h2 class="card-title">预警时间表</h2>
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>留言ID</th>
+                                <th>用户</th>
+                                <th>预警级别</th>
+                                <th>下次预警时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="warningsList">
+                            <!-- 动态加载预警列表 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card fade-in">
+                <h2 class="card-title">系统日志</h2>
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>时间</th>
+                                <th>类型</th>
+                                <th>详情</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logsList">
+                            <!-- 动态加载日志列表 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+</html>

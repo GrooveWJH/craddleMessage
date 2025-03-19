@@ -1,0 +1,15 @@
+# Start of Selection
+/.vscode
+/.venv
+.DS_Store
+*.swp
+*.swo
+*.swn
+*.log
+*.pyc
+__pycache__/
+/env
+/.idea
+# End of Selection
+
+*初稿*

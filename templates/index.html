@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>摇篮留言服务</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="{{ url_for('index') }}" class="navbar-brand">摇篮留言</a>
+            <div class="nav-links">
+                {% if current_user.is_authenticated %}
+                    {% if current_user.username == config.ADMIN_USERNAME %}
+                        <a href="{{ url_for('admin') }}">管理后台</a>
+                    {% endif %}
+                    <a href="{{ url_for('logout') }}">退出登录</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}">登录</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} fade-in">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% if current_user.is_authenticated %}
+                <div class="card fade-in">
+                    <h2 class="card-title">创建新留言</h2>
+                    <form id="messageForm" class="form">
+                        <div class="form-group">
+                            <label class="form-label" for="content">留言内容</label>
+                            <textarea class="form-control" id="content" name="content" rows="5" required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="initialDelay">初始等待时间（月）</label>
+                            <select class="form-control" id="initialDelay" name="initialDelay" required>
+                                <option value="1">1个月</option>
+                                <option value="3">3个月</option>
+                                <option value="6">6个月</option>
+                                <option value="12">12个月</option>
+                                <option value="24">24个月</option>
+                                <option value="36">36个月</option>
+                                <option value="48">48个月</option>
+                                <option value="60">60个月</option>
+                            </select>
+                            <div style="margin-top: 1rem; padding: 1rem; background-color: rgba(52,152,219,0.1); border-radius: 4px; font-size: 0.9rem;">
+                                <h4 style="color: var(--secondary-color); margin-bottom: 0.5rem;">预警机制说明：</h4>
+                                <p style="margin-bottom: 0.5rem;">系统将按照以下时间节点发送预警通知：</p>
+                                <ol style="padding-left: 1.2rem; color: var(--text-color);">
+                                    <li>第一次预警：初始等待期结束时</li>
+                                    <li>第二次预警：第一次预警后1个月</li>
+                                    <li>第三次预警：第二次预警后1个月</li>
+                                    <li>第四次预警：第三次预警后1周</li>
+                                    <li>最终预警：第四次预警后1天</li>
+                                </ol>
+                                <p style="margin-top: 0.5rem; color: var(--text-color);">
+                                    每次预警后，您可以选择：<br>
+                                    1. 触发持续存储：重置等待期为初始设定的月数<br>
+                                    2. 继续等待：进入下一级预警阶段<br>
+                                    <strong style="color: var(--accent-color);">注意：</strong> 如果最终预警后24小时内未进行操作，系统将自动发送留言。
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">接收人</label>
+                            <div id="recipients">
+                                <div class="recipient-entry" style="margin-bottom: 1rem;">
+                                    <input type="text" class="form-control" name="recipient_name[]" placeholder="姓名" style="margin-bottom: 0.5rem;">
+                                    <input type="text" class="form-control" name="recipient_contact[]" placeholder="联系方式" style="margin-bottom: 0.5rem;">
+                                    <select class="form-control" name="recipient_type[]">
+                                        <option value="email">邮箱</option>
+                                        <option value="phone">手机</option>
+                                        <option value="wechat">微信</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="addRecipient()" style="margin-top: 1rem;">
+                                添加接收人
+                            </button>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">创建留言</button>
+                    </form>
+                </div>
+
+                <div class="card fade-in">
+                    <h2 class="card-title">我的留言</h2>
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>创建时间</th>
+                                    <th>内容预览</th>
+                                    <th>预警级别</th>
+                                    <th>下次预警时间</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="messagesList">
+                                <!-- 动态加载留言列表 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% else %}
+                <div class="card fade-in" style="text-align: center;">
+                    <h2 class="card-title">欢迎使用摇篮留言服务</h2>
+                    <p style="margin-bottom: 2rem;">请登录后开始创建您的留言</p>
+                    <a href="{{ url_for('login') }}" class="btn btn-primary">立即登录</a>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
