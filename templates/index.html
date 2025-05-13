@@ -5,19 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>摇篮留言服务</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
     <nav class="navbar">
         <div class="container">
-            <a href="{{ url_for('index') }}" class="navbar-brand">摇篮留言</a>
+            <a href="{{ url_for('main.index') }}" class="navbar-brand">摇篮留言</a>
             <div class="nav-links">
                 {% if current_user.is_authenticated %}
-                    {% if current_user.username == config.ADMIN_USERNAME %}
-                        <a href="{{ url_for('admin') }}">管理后台</a>
+                    {% if current_user.username == "admin" %}
+                        <a href="{{ url_for('main.admin') }}"><i class="fas fa-cog"></i> 管理后台</a>
                     {% endif %}
-                    <a href="{{ url_for('logout') }}">退出登录</a>
+                    <a href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt"></i> 退出登录</a>
                 {% else %}
-                    <a href="{{ url_for('login') }}">登录</a>
+                    <a href="{{ url_for('auth.login') }}"><i class="fas fa-sign-in-alt"></i> 登录</a>
+                    <a href="{{ url_for('auth.register') }}"><i class="fas fa-user-plus"></i> 注册</a>
                 {% endif %}
             </div>
         </div>
@@ -29,13 +31,14 @@
                 {% if messages %}
                     {% for category, message in messages %}
                         <div class="alert alert-{{ category }} fade-in">
-                            {{ message }}
+                            <i class="fas {% if category == 'danger' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %}"></i> {{ message }}
                         </div>
                     {% endfor %}
                 {% endif %}
             {% endwith %}
 
             {% if current_user.is_authenticated %}
+                {% if current_user.username != "admin" %}
                 <div class="card fade-in">
                     <h2 class="card-title">创建新留言</h2>
                     <form id="messageForm" class="form">
@@ -56,8 +59,8 @@
                                 <option value="48">48个月</option>
                                 <option value="60">60个月</option>
                             </select>
-                            <div style="margin-top: 1rem; padding: 1rem; background-color: rgba(52,152,219,0.1); border-radius: 4px; font-size: 0.9rem;">
-                                <h4 style="color: var(--secondary-color); margin-bottom: 0.5rem;">预警机制说明：</h4>
+                            <div style="margin-top: 1rem; padding: 1rem; background-color: rgba(52,152,219,0.1); border-radius: 8px; font-size: 0.9rem;">
+                                <h4 style="color: var(--secondary-color); margin-bottom: 0.5rem;"><i class="fas fa-info-circle"></i> 预警机制说明：</h4>
                                 <p style="margin-bottom: 0.5rem;">系统将按照以下时间节点发送预警通知：</p>
                                 <ol style="padding-left: 1.2rem; color: var(--text-color);">
                                     <li>第一次预警：初始等待期结束时</li>
@@ -70,7 +73,7 @@
                                     每次预警后，您可以选择：<br>
                                     1. 触发持续存储：重置等待期为初始设定的月数<br>
                                     2. 继续等待：进入下一级预警阶段<br>
-                                    <strong style="color: var(--accent-color);">注意：</strong> 如果最终预警后24小时内未进行操作，系统将自动发送留言。
+                                    <strong style="color: var(--accent-color);"><i class="fas fa-exclamation-triangle"></i> 注意：</strong> 如果最终预警后24小时内未进行操作，系统将自动发送留言。
                                 </p>
                             </div>
                         </div>
@@ -88,15 +91,61 @@
                                     </select>
                                 </div>
                             </div>
-                            <button type="button" class="btn btn-primary" onclick="addRecipient()" style="margin-top: 1rem;">
-                                添加接收人
+                            <button type="button" class="btn btn-secondary" onclick="addRecipient()" style="margin-top: 1rem;">
+                                <i class="fas fa-plus"></i> 添加接收人
                             </button>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">创建留言</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> 创建留言
+                        </button>
+                    </form>
+                    
+                    <!-- 撤销密钥弹出窗口 -->
+                    <div id="keyModal" class="modal">
+                        <div class="modal-content">
+                            <span class="close-modal">&times;</span>
+                            <h3><i class="fas fa-key"></i> 重要：您的撤销密钥</h3>
+                            <p class="warning-text"><i class="fas fa-exclamation-triangle"></i> 请保存此密钥，这是您撤销留言的唯一凭证！</p>
+                            <div class="key-container">
+                                <code id="revocationKey"></code>
+                                <button onclick="copyRevocationKey()" class="btn btn-secondary btn-sm">
+                                    <i class="fas fa-copy"></i> 复制
+                                </button>
+                            </div>
+                            <p class="note-text">密钥仅显示一次，请妥善保存。如果丢失，将无法撤销此留言。</p>
+                            <button class="btn btn-primary btn-block" onclick="closeModal()">
+                                <i class="fas fa-check"></i> 我已保存密钥
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- 撤销留言卡片 -->
+                <div class="card fade-in">
+                    <h2 class="card-title">查看或撤销留言</h2>
+                    <p>如果您有留言的撤销密钥，可以使用下方表单查看或撤销留言：</p>
+                    <form id="revokeForm" class="form">
+                        <div class="form-group">
+                            <label class="form-label" for="revocationKey">撤销密钥</label>
+                            <input type="text" class="form-control" id="revocationKeyInput" name="revocationKey" placeholder="输入撤销密钥" required>
+                        </div>
+                        <div class="button-group">
+                            <button type="button" id="viewMessageBtn" class="btn btn-secondary">
+                                <i class="fas fa-eye"></i> 查看留言
+                            </button>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash-alt"></i> 撤销留言
+                            </button>
+                        </div>
+                        <div class="note-text" style="margin-top: 15px;">
+                            <i class="fas fa-info-circle"></i> 留言被撤销后将从系统中彻底删除，无法恢复。
+                        </div>
                     </form>
                 </div>
 
+                {% if current_user.username != "admin" %}
                 <div class="card fade-in">
                     <h2 class="card-title">我的留言</h2>
                     <div class="table-container">
@@ -117,16 +166,77 @@
                         </table>
                     </div>
                 </div>
+                {% endif %}
             {% else %}
                 <div class="card fade-in" style="text-align: center;">
                     <h2 class="card-title">欢迎使用摇篮留言服务</h2>
-                    <p style="margin-bottom: 2rem;">请登录后开始创建您的留言</p>
-                    <a href="{{ url_for('login') }}" class="btn btn-primary">立即登录</a>
+                    <p style="margin-bottom: 2rem;">请登录或注册后开始创建您的留言</p>
+                    <div style="display: flex; justify-content: center; gap: 20px;">
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt"></i> 立即登录
+                        </a>
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-secondary">
+                            <i class="fas fa-user-plus"></i> 注册账号
+                        </a>
+                    </div>
                 </div>
             {% endif %}
         </div>
     </main>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        function addRecipient() {
+            const container = document.getElementById('recipients');
+            const newEntry = document.createElement('div');
+            newEntry.className = 'recipient-entry';
+            newEntry.style.marginBottom = '1rem';
+            newEntry.innerHTML = `
+                <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+                    <input type="text" class="form-control" name="recipient_name[]" placeholder="姓名" style="flex: 1; margin-right: 0.5rem;">
+                    <button type="button" class="btn btn-sm btn-danger remove-recipient" style="flex-shrink: 0;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <input type="text" class="form-control" name="recipient_contact[]" placeholder="联系方式" style="margin-bottom: 0.5rem;">
+                <select class="form-control" name="recipient_type[]">
+                    <option value="email">邮箱</option>
+                    <option value="phone">手机</option>
+                    <option value="wechat">微信</option>
+                </select>
+            `;
+            container.appendChild(newEntry);
+            
+            // 添加删除事件
+            newEntry.querySelector('.remove-recipient').addEventListener('click', function() {
+                container.removeChild(newEntry);
+            });
+        }
+        
+        // 模态窗口控制
+        const modal = document.getElementById('keyModal');
+        const closeBtn = document.querySelector('.close-modal');
+        
+        function showKeyModal(key) {
+            document.getElementById('revocationKey').textContent = key;
+            modal.style.display = 'block';
+        }
+        
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+        
+        // 关闭按钮事件
+        if (closeBtn) {
+            closeBtn.onclick = closeModal;
+        }
+        
+        // 点击模态窗口外部关闭
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
 </body>
 </html>

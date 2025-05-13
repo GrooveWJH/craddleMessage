@@ -4,36 +4,50 @@
 
 ### 1. 系统概述
 - [系统简介](overview/introduction.md)
-- [核心功能](overview/features.md)
-- [系统架构](overview/architecture.md)
-- [技术栈](overview/tech-stack.md)
+- [系统特性](overview/features.md)
 
-### 2. 系统设计
-- [系统流程图](design/system-flow.md)
-- [数据模型](design/data-model.md)
-- [API设计](design/api-design.md)
-- [安全设计](design/security.md)
-- [预警机制](design/alert-mechanism.md)
+### 2. 架构设计
+- [系统架构](architecture/system.md)
+- [蓝图架构](architecture/blueprint.md)
+- [数据库设计](architecture/database.md)
+- [API架构](architecture/api.md)
+- [技术架构](architecture/technical.md)
 
-### 3. 实现细节
-- [数据库设计](implementation/database.md)
-- [用户认证](implementation/authentication.md)
+### 3. 功能实现
 - [留言管理](implementation/message-management.md)
-- [预警系统](implementation/alert-system.md)
+- [用户认证](implementation/authentication.md)
+- [安全机制](implementation/security.md)
 - [前端实现](implementation/frontend.md)
 
-### 4. 部署与运维
-- [环境要求](deployment/requirements.md)
-- [安装步骤](deployment/installation.md)
-- [配置说明](deployment/configuration.md)
-- [监控与维护](deployment/monitoring.md)
-- [备份策略](deployment/backup.md)
+### 4. API参考
+- [API文档](api/reference.md)
 
-### 5. 开发指南
-- [开发环境搭建](development/setup.md)
-- [代码规范](development/code-style.md)
-- [测试指南](development/testing.md)
-- [贡献指南](development/contributing.md)
+### 5. 部署与运维
+- [部署指南](deployment/guide.md)
+
+### 6. 开发指南
+- [开发指南](development/guide.md)
+- [贡献指南](CONTRIBUTING.md)
+
+### 7. 变更记录
+- [更新日志](CHANGELOG.md)
+
+## 最新功能
+
+### 留言管理功能
+- **我的留言列表**：用户可以查看自己创建的所有留言，包括状态、预警级别等信息
+- **留言内容查看**：通过密钥验证可以查看完整留言内容
+- **留言撤销**：用户可以使用撤销密钥彻底删除留言数据
+
+### 安全特性
+- **内容加密**：使用Fernet对称加密保护留言内容
+- **密钥验证**：实现留言ID与密钥匹配验证，防止密钥滥用
+- **数据保护**：撤销留言时完全删除数据库记录
+
+### 用户界面
+- **响应式设计**：适配不同设备屏幕大小
+- **交互反馈**：添加操作成功/失败的提示信息
+- **状态显示**：使用颜色和图标直观显示留言状态和预警级别
 
 ## 文档说明
 
@@ -41,8 +55,8 @@
 
 ### 文档更新
 
-- 最后更新：2024-03-20
-- 版本：1.0.0
+- 最后更新：2024-05-30
+- 版本：1.1.0
 - 状态：开发中
 
 ### 文档维护
@@ -52,21 +66,25 @@
 ## 快速开始
 
 1. 克隆项目
+
 ```bash
-git clone [项目地址]
+git clone https://github.com/your-username/cradle-message.git
 ```
 
 2. 安装依赖
+
 ```bash
 pip install -r requirements.txt
 ```
 
 3. 初始化数据库
+
 ```bash
 python scripts/init_db.py
 ```
 
 4. 启动服务
+
 ```bash
 python app.py
 ```
@@ -75,8 +93,7 @@ python app.py
 
 - Python 3.8+
 - MySQL 5.7+
-- Redis 6.0+
-- Node.js 14+ (前端开发)
+- 所需Python包（详见requirements.txt）
 
 ## 许可证
 

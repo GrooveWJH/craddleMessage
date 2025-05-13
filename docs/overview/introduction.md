@@ -25,7 +25,7 @@
 
 1. **长期存储**
    - 支持可配置的长期留言存储
-   - 用户可控的初始延迟设置
+   - 用户可控的初始延迟设置（1-60个月）
    - 灵活的预警响应机制
 
 2. **智能预警**
@@ -44,12 +44,13 @@
 
 ### 技术架构
 
-- **后端框架**: Flask 3.1.0
-- **ORM工具**: SQLAlchemy 2.0.39 (Flask-SQLAlchemy 3.1.1)
+- **后端框架**: Flask
+- **ORM工具**: SQLAlchemy (Flask-SQLAlchemy)
 - **数据库**: MySQL (通过PyMySQL)
 - **认证**: Flask-Login + JWT Extended
 - **模板引擎**: Jinja2
 - **前端技术**: 原生JavaScript + CSS
+- **加密库**: Cryptography (Fernet)
 
 ### 模块结构
 
@@ -109,26 +110,40 @@ stateDiagram-v2
 系统包含四个主要数据模型：
 
 1. **User (用户)**
-   - 基本用户信息
-   - 认证信息
-   - 创建的留言列表
+   - id: 用户ID
+   - username: 用户名
+   - email: 电子邮件
+   - password: 密码
+   - created_at: 创建时间
+   - messages: 关联的留言列表
 
 2. **Message (留言)**
-   - 留言内容
-   - 预警配置
-   - 撤销密钥
-   - 状态信息
+   - id: 留言ID
+   - user_id: 关联的用户ID
+   - content: 留言内容
+   - created_at: 创建时间
+   - initial_delay_months: 初始延迟月数
+   - next_warning_date: 下次预警日期
+   - warning_level: 当前预警级别 (0-5)
+   - is_active: 是否处于活跃状态
+   - revocation_key: 撤销密钥
+   - recipients: 关联的接收人列表
+   - status_logs: 关联的状态日志列表
 
 3. **Recipient (接收人)**
-   - 接收人信息
-   - 联系方式
-   - 联系类型
+   - id: 接收人ID
+   - message_id: 关联的留言ID
+   - name: 接收人姓名
+   - contact: 联系方式
+   - contact_type: 联系类型 (email/phone/wechat)
 
 4. **StatusLog (状态日志)**
-   - 状态变更记录
-   - 时间戳
-   - 详细信息
-   - 用户响应
+   - id: 日志ID
+   - message_id: 关联的留言ID
+   - status: 状态标识
+   - created_at: 创建时间
+   - details: 详细信息
+   - response: 用户响应 (RESET/CONTINUE)
 
 ## 应用场景
 
@@ -152,19 +167,24 @@ stateDiagram-v2
 1. **创建留言**
    - 用户登录系统
    - 填写留言内容
-   - 设置初始延迟时间
+   - 设置初始延迟时间 (1-60个月)
    - 添加接收人信息
    - 提交留言并获取撤销密钥
 
 2. **管理留言**
-   - 查看已创建的留言
+   - 查看已创建的留言列表
    - 使用撤销密钥取消留言
    - 响应预警通知（重置或继续）
 
-3. **接收留言**
-   - 系统在预定时间发送留言
-   - 接收人通过指定方式接收留言
-   - 查看留言内容
+3. **预警响应**
+   - 系统在预定时间发送预警通知
+   - 用户选择重置预警或继续
+   - 如无响应，系统按预定计划继续下一级预警
+
+4. **留言发送**
+   - 完成五级预警后，系统在24小时后自动发送留言
+   - 接收人通过指定的联系方式接收
+   - 留言状态更新为已发送
 
 ## 安全机制
 

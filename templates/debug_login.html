@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>调试模式 - 摇篮留言服务</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="{{ url_for('main.index') }}" class="navbar-brand">摇篮留言</a>
+            <div class="nav-links">
+                <a href="{{ url_for('main.index') }}"><i class="fas fa-home"></i> 返回首页</a>
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt"></i> 退出登录</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container auth-container">
+            <div class="card fade-in">
+                <h2 class="card-title">调试模式快速登录</h2>
+                <div style="text-align: center;">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> 当前处于开发调试模式，请选择登录方式
+                    </div>
+                    
+                    {% if current_user.is_authenticated %}
+                        <div class="alert alert-info" style="margin-top: 10px;">
+                            <i class="fas fa-info-circle"></i> 当前已登录为: <strong>{{ current_user.username }}</strong>
+                        </div>
+                        <a href="{{ url_for('auth.logout') }}" class="btn" style="background-color: #dc3545; color: white; width: 100%; margin-bottom: 20px;">
+                            <i class="fas fa-sign-out-alt"></i> 退出当前登录
+                        </a>
+                    {% endif %}
+                    
+                    <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
+                        <a href="{{ url_for('auth.debug_login', mode='admin') }}" class="btn btn-primary" style="width: 100%;">
+                            <i class="fas fa-user-shield"></i> 管理员账户登录 (admin)
+                        </a>
+                        
+                        <a href="{{ url_for('auth.debug_login', mode='test') }}" class="btn btn-secondary" style="width: 100%;">
+                            <i class="fas fa-user"></i> 测试用户登录 (testAccount1)
+                        </a>
+                    </div>
+                    
+                    <div style="margin-top: 20px; font-size: 0.9rem; color: #666;">
+                        <p><strong>账户信息：</strong></p>
+                        <p>管理员：用户名 <code>admin</code>，密码 <code>123123</code></p>
+                        <p>测试用户：用户名 <code>testuser</code>，密码 <code>123123</code></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <style>
+        code {
+            background-color: #f8f9fa;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+            border: 1px solid #ddd;
+        }
+    </style>
+</body>
+</html> 

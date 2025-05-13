@@ -5,14 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理后台 - 摇篮留言服务</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
     <nav class="navbar">
         <div class="container">
-            <a href="{{ url_for('index') }}" class="navbar-brand">摇篮留言</a>
+            <a href="{{ url_for('main.index') }}" class="navbar-brand">摇篮留言</a>
             <div class="nav-links">
-                <a href="{{ url_for('index') }}">返回首页</a>
-                <a href="{{ url_for('logout') }}">退出登录</a>
+                <a href="{{ url_for('main.index') }}"><i class="fas fa-home"></i> 返回首页</a>
+                <a href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt"></i> 退出登录</a>
             </div>
         </div>
     </nav>
@@ -20,87 +21,367 @@
     <main class="main-content">
         <div class="container">
             <div class="card fade-in">
-                <h2 class="card-title">系统概览</h2>
+                <h2 class="card-title">管理后台</h2>
+                <h3>欢迎，管理员</h3>
+                
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-number">{{ stats.userCount }}</div>
+                        <div class="stat-number">{{ stats.user_count }}</div>
                         <div class="stat-label">总用户数</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number">{{ stats.messageCount }}</div>
+                        <div class="stat-number">{{ stats.message_count }}</div>
                         <div class="stat-label">总留言数</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number">{{ stats.activeMessages }}</div>
-                        <div class="stat-label">活跃留言数</div>
+                        <div class="stat-number">{{ stats.active_message_count }}</div>
+                        <div class="stat-label">活跃留言</div>
                     </div>
                 </div>
-
-                <h3 style="margin: 2rem 0 1rem;">预警级别分布</h3>
+                
+                <h3 style="margin-top: 2rem;">预警级别分布</h3>
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="warning-badge warning-1">第一级</div>
-                        <div class="stat-number">{{ stats.warningLevels.level1 }}</div>
+                        <div class="stat-number"><span class="warning-badge warning-1">{{ stats.warning_levels.level_1 }}</span></div>
+                        <div class="stat-label">一级预警</div>
                     </div>
                     <div class="stat-card">
-                        <div class="warning-badge warning-2">第二级</div>
-                        <div class="stat-number">{{ stats.warningLevels.level2 }}</div>
+                        <div class="stat-number"><span class="warning-badge warning-2">{{ stats.warning_levels.level_2 }}</span></div>
+                        <div class="stat-label">二级预警</div>
                     </div>
                     <div class="stat-card">
-                        <div class="warning-badge warning-3">第三级</div>
-                        <div class="stat-number">{{ stats.warningLevels.level3 }}</div>
+                        <div class="stat-number"><span class="warning-badge warning-3">{{ stats.warning_levels.level_3 }}</span></div>
+                        <div class="stat-label">三级预警</div>
                     </div>
                     <div class="stat-card">
-                        <div class="warning-badge warning-4">第四级</div>
-                        <div class="stat-number">{{ stats.warningLevels.level4 }}</div>
+                        <div class="stat-number"><span class="warning-badge warning-4">{{ stats.warning_levels.level_4 }}</span></div>
+                        <div class="stat-label">四级预警</div>
                     </div>
                     <div class="stat-card">
-                        <div class="warning-badge warning-5">最终预警</div>
-                        <div class="stat-number">{{ stats.warningLevels.level5 }}</div>
+                        <div class="stat-number"><span class="warning-badge warning-5">{{ stats.warning_levels.level_5 }}</span></div>
+                        <div class="stat-label">五级预警</div>
                     </div>
                 </div>
-            </div>
-
-            <div class="card fade-in">
-                <h2 class="card-title">预警时间表</h2>
-                <div class="table-container">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>留言ID</th>
-                                <th>用户</th>
-                                <th>预警级别</th>
-                                <th>下次预警时间</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="warningsList">
-                            <!-- 动态加载预警列表 -->
-                        </tbody>
-                    </table>
+                
+                <h3 style="margin-top: 2rem;">系统操作</h3>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
+                    <button class="btn btn-secondary" id="backupDbBtn">
+                        <i class="fas fa-database"></i> 数据库备份
+                    </button>
+                    <button class="btn btn-primary" id="userManageBtn">
+                        <i class="fas fa-users"></i> 用户管理
+                    </button>
                 </div>
-            </div>
-
-            <div class="card fade-in">
-                <h2 class="card-title">系统日志</h2>
+                
+                <h3 style="margin-top: 2rem;">系统日志</h3>
                 <div class="table-container">
                     <table class="table">
                         <thead>
                             <tr>
                                 <th>时间</th>
-                                <th>类型</th>
-                                <th>详情</th>
+                                <th>操作</th>
+                                <th>用户</th>
+                                <th>状态</th>
                             </tr>
                         </thead>
-                        <tbody id="logsList">
-                            <!-- 动态加载日志列表 -->
+                        <tbody>
+                            <tr>
+                                <td>2023-09-20 18:24:31</td>
+                                <td>用户登录</td>
+                                <td>admin</td>
+                                <td>成功</td>
+                            </tr>
+                            <tr>
+                                <td>2023-09-20 17:53:12</td>
+                                <td>创建留言</td>
+                                <td>testuser1</td>
+                                <td>成功</td>
+                            </tr>
+                            <tr>
+                                <td>2023-09-20 16:45:09</td>
+                                <td>重置预警</td>
+                                <td>testuser2</td>
+                                <td>成功</td>
+                            </tr>
+                            <tr>
+                                <td>2023-09-20 15:32:24</td>
+                                <td>撤销留言</td>
+                                <td>testuser3</td>
+                                <td>成功</td>
+                            </tr>
+                            <tr>
+                                <td>2023-09-20 14:21:17</td>
+                                <td>用户注册</td>
+                                <td>newuser1</td>
+                                <td>成功</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
     </main>
+    
+    <!-- 数据库备份模态框 -->
+    <div id="backupModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3><i class="fas fa-database"></i> 数据库备份</h3>
+            <div id="backupInProgress" style="display: none;">
+                <div class="loading-spinner"></div>
+                <p class="text-center">正在备份数据库，请稍候...</p>
+            </div>
+            <div id="backupResult" style="display: none;">
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> 数据库备份成功！
+                </div>
+                <div class="backup-details">
+                    <p><strong>备份文件：</strong> <span id="backupFilename"></span></p>
+                    <p><strong>备份路径：</strong> <span id="backupPath"></span></p>
+                    <p><strong>备份时间：</strong> <span id="backupTime"></span></p>
+                    <p><strong>文件大小：</strong> <span id="backupSize"></span></p>
+                </div>
+            </div>
+            <div id="backupError" style="display: none;">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i> 备份失败！
+                </div>
+                <p id="errorMessage"></p>
+            </div>
+            <div id="backupControls">
+                <button id="startBackupBtn" class="btn btn-primary btn-block">
+                    <i class="fas fa-database"></i> 开始备份
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 用户管理模态框 -->
+    <div id="userModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <span class="close-modal">&times;</span>
+            <h3><i class="fas fa-users"></i> 用户管理</h3>
+            
+            <div class="search-box" style="margin-bottom: 1rem;">
+                <input type="text" id="userSearchInput" class="form-control" placeholder="搜索用户名或邮箱..." style="margin-bottom: 0.5rem;">
+                <button id="searchUserBtn" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-search"></i> 搜索
+                </button>
+            </div>
+            
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>用户名</th>
+                            <th>邮箱</th>
+                            <th>注册时间</th>
+                            <th>留言数</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ user.messages|length }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-secondary view-user-btn" data-user-id="{{ user.id }}">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div id="userDetails" style="display: none; margin-top: 1rem; padding: 1rem; border: 1px solid #ddd; border-radius: 5px;">
+                <h4>用户详情</h4>
+                <div class="user-info">
+                    <p><strong>用户ID：</strong> <span id="userId"></span></p>
+                    <p><strong>用户名：</strong> <span id="username"></span></p>
+                    <p><strong>邮箱：</strong> <span id="userEmail"></span></p>
+                    <p><strong>注册时间：</strong> <span id="userCreatedAt"></span></p>
+                    <p><strong>留言数量：</strong> <span id="messageCount"></span></p>
+                </div>
+                
+                <div class="message-list" style="margin-top: 1rem;">
+                    <h5>用户留言列表</h5>
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>内容预览</th>
+                                    <th>创建时间</th>
+                                    <th>状态</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userMessagesBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+    <script>
+        // 数据库备份模态框控制
+        const backupModal = document.getElementById('backupModal');
+        const backupBtn = document.getElementById('backupDbBtn');
+        const backupClose = backupModal.querySelector('.close-modal');
+        
+        backupBtn.onclick = function() {
+            backupModal.style.display = 'block';
+            document.getElementById('backupInProgress').style.display = 'none';
+            document.getElementById('backupResult').style.display = 'none';
+            document.getElementById('backupError').style.display = 'none';
+            document.getElementById('backupControls').style.display = 'block';
+        }
+        
+        backupClose.onclick = function() {
+            backupModal.style.display = 'none';
+        }
+        
+        document.getElementById('startBackupBtn').onclick = function() {
+            document.getElementById('backupControls').style.display = 'none';
+            document.getElementById('backupInProgress').style.display = 'block';
+            
+            // 发送数据库备份请求
+            fetch('/api/admin/backup-db', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('backupInProgress').style.display = 'none';
+                
+                if (data.success) {
+                    document.getElementById('backupFilename').textContent = data.filename;
+                    document.getElementById('backupPath').textContent = data.path;
+                    document.getElementById('backupTime').textContent = data.time;
+                    document.getElementById('backupSize').textContent = data.size;
+                    document.getElementById('backupResult').style.display = 'block';
+                } else {
+                    document.getElementById('errorMessage').textContent = data.error || '数据库备份失败';
+                    document.getElementById('backupError').style.display = 'block';
+                    document.getElementById('backupControls').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                document.getElementById('backupInProgress').style.display = 'none';
+                document.getElementById('errorMessage').textContent = '请求失败: ' + error.message;
+                document.getElementById('backupError').style.display = 'block';
+                document.getElementById('backupControls').style.display = 'block';
+            });
+        }
+        
+        // 用户管理模态框控制
+        const userModal = document.getElementById('userModal');
+        const userManageBtn = document.getElementById('userManageBtn');
+        const userClose = userModal.querySelector('.close-modal');
+        
+        userManageBtn.onclick = function() {
+            userModal.style.display = 'block';
+            document.getElementById('userDetails').style.display = 'none';
+        }
+        
+        userClose.onclick = function() {
+            userModal.style.display = 'none';
+        }
+        
+        // 点击用户操作按钮显示详情
+        document.querySelectorAll('.view-user-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const userId = this.getAttribute('data-user-id');
+                
+                // 获取用户详情
+                fetch(`/api/admin/user/${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('userId').textContent = data.id;
+                    document.getElementById('username').textContent = data.username;
+                    document.getElementById('userEmail').textContent = data.email;
+                    document.getElementById('userCreatedAt').textContent = data.created_at;
+                    document.getElementById('messageCount').textContent = data.messages.length;
+                    
+                    // 清空并填充留言列表
+                    const messagesBody = document.getElementById('userMessagesBody');
+                    messagesBody.innerHTML = '';
+                    
+                    data.messages.forEach(message => {
+                        const row = document.createElement('tr');
+                        
+                        // 创建内容单元格
+                        const idCell = document.createElement('td');
+                        idCell.textContent = message.id;
+                        row.appendChild(idCell);
+                        
+                        // 创建内容单元格
+                        const contentCell = document.createElement('td');
+                        contentCell.textContent = message.content.substring(0, 30) + (message.content.length > 30 ? '...' : '');
+                        row.appendChild(contentCell);
+                        
+                        // 创建时间单元格
+                        const timeCell = document.createElement('td');
+                        timeCell.textContent = message.created_at;
+                        row.appendChild(timeCell);
+                        
+                        // 创建状态单元格
+                        const statusCell = document.createElement('td');
+                        const statusBadge = document.createElement('span');
+                        statusBadge.className = 'badge ' + (message.is_active ? 'badge-success' : 'badge-danger');
+                        statusBadge.textContent = message.is_active ? '活跃' : '已撤销';
+                        statusCell.appendChild(statusBadge);
+                        row.appendChild(statusCell);
+                        
+                        messagesBody.appendChild(row);
+                    });
+                    
+                    document.getElementById('userDetails').style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('获取用户详情失败:', error);
+                    alert('获取用户详情失败: ' + error.message);
+                });
+            });
+        });
+        
+        // 搜索用户
+        document.getElementById('searchUserBtn').addEventListener('click', function() {
+            const searchTerm = document.getElementById('userSearchInput').value.trim().toLowerCase();
+            const rows = document.querySelectorAll('#userTableBody tr');
+            
+            rows.forEach(row => {
+                const username = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                const email = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                
+                if (username.includes(searchTerm) || email.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+        
+        // 点击模态窗口外部关闭
+        window.onclick = function(event) {
+            if (event.target == backupModal) {
+                backupModal.style.display = 'none';
+            }
+            if (event.target == userModal) {
+                userModal.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>

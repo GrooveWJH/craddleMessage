@@ -1,188 +1,306 @@
 # 贡献指南
 
-感谢您对摇篮留言服务系统的关注！我们欢迎任何形式的贡献，包括但不限于：提交问题、改进文档、提交代码等。
+感谢您对摇篮留言服务系统的关注！我们欢迎并感谢任何形式的贡献。本文档提供了如何参与项目开发的指南。
 
-## 1. 行为准则
+## 开发环境设置
 
-### 1.1 基本原则
-- 尊重他人
-- 友善交流
-- 专业讨论
-- 共同进步
+### 克隆代码库
 
-### 1.2 沟通规范
-- 使用清晰、专业的语言
-- 保持积极、建设性的态度
-- 避免使用过激或不当言论
-- 尊重不同的观点和建议
-
-## 2. 提交问题
-
-### 2.1 问题报告
-- 使用清晰的问题标题
-- 详细描述问题现象
-- 提供复现步骤
-- 附上相关截图或日志
-
-### 2.2 问题模板
-```markdown
-## 问题描述
-[详细描述问题]
-
-## 复现步骤
-1. [步骤1]
-2. [步骤2]
-3. [步骤3]
-
-## 期望行为
-[描述期望的正确行为]
-
-## 实际行为
-[描述实际发生的行为]
-
-## 环境信息
-- 操作系统：[系统版本]
-- 浏览器：[浏览器版本]
-- 应用版本：[版本号]
-
-## 其他信息
-[其他相关信息]
+```bash
+git clone https://github.com/your-repo/cradle-message.git
+cd cradle-message
 ```
 
-## 3. 提交代码
+### 创建虚拟环境
 
-### 3.1 开发流程
-1. Fork 项目
-2. 创建功能分支
-3. 提交代码
-4. 发起 Pull Request
+```bash
+# 创建虚拟环境
+python -m venv .venv
 
-### 3.2 分支管理
-- **分支命名**
-  - feature/功能名称
-  - bugfix/问题描述
-  - hotfix/紧急修复
-  - release/版本号
+# 激活虚拟环境
+# Linux/macOS
+source .venv/bin/activate
+# Windows
+.\.venv\Scripts\activate
+```
 
-- **提交规范**
-  ```
-  <type>(<scope>): <subject>
+### 安装依赖
 
-  <body>
+```bash
+pip install -r requirements.txt
 
-  <footer>
-  ```
+# 如果需要开发环境特定依赖
+pip install pytest pytest-cov black flake8
+```
 
-### 3.3 代码审查
-- 确保代码符合规范
-- 添加必要的测试
-- 更新相关文档
-- 处理代码审查意见
+### 设置数据库
 
-## 4. 文档贡献
+```bash
+# 使用MySQL客户端创建数据库
+mysql -u root -p
+CREATE DATABASE cradle_message_dev CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'cradle_dev'@'localhost' IDENTIFIED BY 'dev_password';
+GRANT ALL PRIVILEGES ON cradle_message_dev.* TO 'cradle_dev'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
 
-### 4.1 文档规范
-- 使用 Markdown 格式
-- 保持结构清晰
-- 内容准确完整
-- 及时更新维护
+# 配置环境变量
+export SECRET_KEY="dev-secret-key"
+export DATABASE_URL="mysql+pymysql://cradle_dev:dev_password@localhost/cradle_message_dev"
+export JWT_SECRET_KEY="dev-jwt-secret-key"
+export ENCRYPTION_KEY="dev-encryption-key-32-bytes-long"
 
-### 4.2 文档类型
-- 技术文档
-- 用户指南
-- API文档
-- 部署文档
+# 初始化数据库
+flask db init
+flask db migrate -m "Initial migration"
+flask db upgrade
+```
 
-## 5. 测试贡献
+### 创建测试用户
 
-### 5.1 测试规范
-- 编写单元测试
-- 编写集成测试
-- 编写端到端测试
-- 保持测试覆盖率
-
-### 5.2 测试用例
 ```python
-def test_feature():
-    # 准备测试数据
-    test_data = create_test_data()
+# 使用Python Shell创建用户
+python -c "
+from app import app, db
+from models import User
+
+with app.app_context():
+    # 创建普通用户
+    user = User(username='testuser', email='test@example.com', password='password')
+    db.session.add(user)
     
-    # 执行测试
-    result = process_feature(test_data)
+    # 创建管理员用户
+    admin = User(username='admin', email='admin@example.com', password='admin123')
+    db.session.add(admin)
     
-    # 验证结果
-    assert result.status == 'success'
-    assert result.data is not None
+    db.session.commit()
+    print('用户创建成功')
+"
 ```
 
-## 6. 发布流程
+### 启动开发服务器
 
-### 6.1 版本发布
-1. 更新版本号
-2. 更新更新日志
-3. 创建发布标签
-4. 发布新版本
+```bash
+flask run
+```
 
-### 6.2 发布检查
-- 功能测试通过
-- 文档更新完整
-- 依赖包更新
-- 安全漏洞修复
+访问 http://localhost:5000 开始使用应用。
 
-## 7. 社区维护
+## 项目结构
 
-### 7.1 社区管理
-- 及时响应问题
-- 定期代码审查
-- 组织社区活动
-- 维护社区氛围
+```
+cradle-message/
+├── app.py                # 主应用文件
+├── models.py             # 数据模型定义
+├── config/               # 配置文件
+│   └── config.py         # 配置类
+├── static/               # 静态资源
+│   ├── css/              # CSS样式表
+│   ├── js/               # JavaScript文件
+│   └── img/              # 图片资源
+├── templates/            # HTML模板
+│   ├── index.html        # 首页模板
+│   ├── login.html        # 登录页模板
+│   └── admin.html        # 管理页模板
+├── docs/                 # 文档
+│   ├── api/              # API文档
+│   ├── architecture/     # 架构文档
+│   ├── deployment/       # 部署文档
+│   ├── development/      # 开发文档
+│   └── overview/         # 概述文档
+├── logs/                 # 日志文件夹
+├── scripts/              # 实用脚本
+├── .venv/                # 虚拟环境(不提交)
+├── .gitignore            # Git忽略配置
+├── requirements.txt      # 项目依赖
+└── README.md             # 项目说明
+```
 
-### 7.2 贡献者支持
-- 提供技术支持
-- 解答问题
-- 提供反馈
-- 认可贡献
+## 开发流程
 
-## 8. 许可证
+### 分支策略
 
-### 8.1 代码许可证
-- 使用 MIT 许可证
-- 保留版权声明
-- 包含许可证文件
-- 更新许可证年份
+- `main`: 主分支，保持稳定可发布状态
+- `develop`: 开发分支，集成最新功能
+- `feature/*`: 功能分支，用于开发新功能
+- `bugfix/*`: 问题修复分支，用于修复bug
+- `hotfix/*`: 紧急修复分支，用于修复生产环境问题
 
-### 8.2 文档许可证
-- 使用 CC BY-SA 许可证
-- 保留作者署名
-- 允许商业使用
-- 要求相同方式共享
+### 开发步骤
 
-## 9. 联系方式
+1. 从最新的`develop`分支创建功能分支
+```bash
+git checkout develop
+git pull
+git checkout -b feature/your-feature-name
+```
 
-### 9.1 官方渠道
-- GitHub Issues
-- 邮件列表
-- 社区论坛
-- 社交媒体
+2. 进行开发，并定期提交
+```bash
+git add .
+git commit -m "feat: implement your feature"
+```
 
-### 9.2 反馈方式
-- 提交 Issue
-- 发送邮件
-- 参与讨论
-- 提交建议
+3. 完成开发后，合并最新的develop分支内容
+```bash
+git checkout develop
+git pull
+git checkout feature/your-feature-name
+git merge develop
+```
 
-## 10. 致谢
+4. 解决冲突(如有)并推送分支
+```bash
+git add .
+git commit -m "merge: resolve conflicts"
+git push -u origin feature/your-feature-name
+```
 
-感谢所有为项目做出贡献的开发者！您的贡献使项目变得更好。
+5. 创建Pull Request (PR)，等待代码审查
 
-### 10.1 贡献者名单
-- 核心开发者
-- 代码贡献者
-- 文档贡献者
-- 问题报告者
+## 代码规范
 
-### 10.2 特别致谢
-- 项目发起人
-- 主要维护者
-- 社区活跃者
-- 早期支持者 
+### Python代码规范
+
+- 遵循[PEP 8](https://www.python.org/dev/peps/pep-0008/)代码风格
+- 使用4个空格缩进
+- 最大行长度为88字符
+- 使用描述性的变量名和函数名
+- 为函数、类和模块添加文档字符串(docstrings)
+- 添加类型注解
+
+示例:
+```python
+def calculate_warning_date(base_date: datetime, warning_level: int) -> datetime:
+    """
+    根据基准日期和预警级别计算下一个预警日期
+    
+    参数:
+        base_date: 基准日期时间
+        warning_level: 预警级别(0-5)
+        
+    返回:
+        计算得出的下一个预警日期时间
+    """
+    if warning_level == 0:
+        return base_date + timedelta(days=30)
+    elif warning_level == 1:
+        return base_date + timedelta(days=30)
+    elif warning_level == 2:
+        return base_date + timedelta(days=7)
+    elif warning_level == 3:
+        return base_date + timedelta(days=1)
+    else:
+        return base_date + timedelta(hours=24)
+```
+
+### 前端代码规范
+
+- HTML: 使用语义化标签，保持结构清晰
+- CSS: 使用一致的命名约定，避免行内样式
+- JavaScript: 使用ES6+语法，避免全局变量
+
+### 提交信息规范
+
+使用规范化的提交信息格式:
+```
+<类型>(<范围>): <描述>
+
+<详细说明>
+
+<相关issue>
+```
+
+类型包括:
+- `feat`: 新功能
+- `fix`: 修复bug
+- `docs`: 文档变更
+- `style`: 代码格式变更
+- `refactor`: 代码重构
+- `test`: 测试相关
+- `chore`: 其他变更
+
+示例:
+```
+feat(warning): 添加预警重置功能
+
+- 实现预警级别重置API
+- 添加重置按钮到前端界面
+- 更新状态日志记录
+
+Closes #42
+```
+
+## 测试
+
+### 运行测试
+
+```bash
+# 运行所有测试
+pytest
+
+# 运行指定测试
+pytest tests/test_models.py
+
+# 带覆盖率报告
+pytest --cov=. tests/
+```
+
+### 编写测试
+
+- 为每个主要功能编写测试
+- 使用描述性的测试函数名
+- 确保测试独立且可重复运行
+- 模拟外部依赖
+
+示例:
+```python
+def test_generate_revocation_key():
+    """测试撤销密钥生成功能"""
+    message = Message(
+        user_id=1,
+        content="测试留言",
+        initial_delay_months=3,
+        next_warning_date=datetime.utcnow() + timedelta(days=90)
+    )
+    
+    key = message.generate_revocation_key()
+    
+    assert key is not None
+    assert len(key) > 0
+    assert message.revocation_key == key
+```
+
+## 文档
+
+### 文档结构
+
+- `/docs/api/`: API参考文档
+- `/docs/architecture/`: 系统架构文档
+- `/docs/deployment/`: 部署指南
+- `/docs/development/`: 开发指南
+- `/docs/overview/`: 系统概述
+
+### 更新文档
+
+- 添加新功能时，同步更新相关文档
+- 修改API时，更新API参考文档
+- 修改架构时，更新架构文档
+- 使用Markdown格式编写文档
+
+## 报告问题
+
+如果您发现问题或有功能建议，请通过项目的Issue系统报告:
+
+1. 检查是否已存在相同或类似的Issue
+2. 创建新Issue，提供详细描述和复现步骤
+3. 如可能，提供screenshots或错误日志
+
+## 联系方式
+
+如果您有任何问题或需要帮助，可以通过以下方式联系我们:
+
+- 项目Issues: https://github.com/your-repo/cradle-message/issues
+- 电子邮件: contact@example.com
+
+感谢您的贡献！ 

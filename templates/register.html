@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册 - 摇篮留言服务</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="{{ url_for('main.index') }}" class="navbar-brand">摇篮留言</a>
+            <div class="nav-links">
+                <a href="{{ url_for('main.index') }}"><i class="fas fa-home"></i> 返回首页</a>
+                <a href="{{ url_for('auth.login') }}"><i class="fas fa-sign-in-alt"></i> 登录账号</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container auth-container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} fade-in">
+                            <i class="fas {% if category == 'danger' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %}"></i> {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="card fade-in">
+                <h2 class="card-title">创建新账号</h2>
+                <form method="POST" action="{{ url_for('auth.register') }}" class="form" id="registerForm">
+                    <div class="form-group">
+                        <label class="form-label" for="username">用户名</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-user input-icon"></i>
+                            <input class="form-control" type="text" id="username" name="username" required placeholder="请输入3-20位字母或数字">
+                        </div>
+                        <div class="password-requirements">
+                            <i class="fas fa-info-circle"></i> 用户名长度必须在3-20个字符之间，只能包含字母和数字
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="email">电子邮箱</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-envelope input-icon"></i>
+                            <input class="form-control" type="email" id="email" name="email" required placeholder="请输入有效的电子邮箱">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="password">密码</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-lock input-icon"></i>
+                            <input class="form-control" type="password" id="password" name="password" required minlength="6" placeholder="请输入至少6位密码">
+                        </div>
+                        <div class="password-requirements">
+                            <i class="fas fa-shield-alt"></i> 密码长度不能少于6个字符
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="confirm_password">确认密码</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-lock input-icon"></i>
+                            <input class="form-control" type="password" id="confirm_password" name="confirm_password" required minlength="6" placeholder="请再次输入密码">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <span class="auth-icon"><i class="fas fa-user-plus"></i></span>注册账号
+                    </button>
+                    
+                    <div class="form-footer">
+                        已有账号？<a href="{{ url_for('auth.login') }}">立即登录</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <style>
+        .input-icon-wrapper {
+            position: relative;
+        }
+        
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control {
+            padding-left: 45px;
+        }
+        
+        .form-control:focus + .input-icon,
+        .form-control:focus ~ .input-icon {
+            color: var(--primary-color);
+        }
+        
+        .validation-passed {
+            border-color: #2ecc71 !important;
+        }
+        
+        .validation-failed {
+            border-color: #e74c3c !important;
+        }
+    </style>
+
+    <script>
+        // 客户端表单验证
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirm_password');
+        
+        // 用户名验证
+        usernameInput.addEventListener('input', function() {
+            const username = this.value;
+            if (username.length >= 3 && username.length <= 20 && /^[a-zA-Z0-9]+$/.test(username)) {
+                this.classList.add('validation-passed');
+                this.classList.remove('validation-failed');
+            } else {
+                this.classList.add('validation-failed');
+                this.classList.remove('validation-passed');
+            }
+        });
+        
+        // 密码验证
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            if (password.length >= 6) {
+                this.classList.add('validation-passed');
+                this.classList.remove('validation-failed');
+            } else {
+                this.classList.add('validation-failed');
+                this.classList.remove('validation-passed');
+            }
+            
+            // 同时验证确认密码
+            const confirmPassword = confirmPasswordInput.value;
+            if (confirmPassword) {
+                if (password === confirmPassword) {
+                    confirmPasswordInput.classList.add('validation-passed');
+                    confirmPasswordInput.classList.remove('validation-failed');
+                } else {
+                    confirmPasswordInput.classList.add('validation-failed');
+                    confirmPasswordInput.classList.remove('validation-passed');
+                }
+            }
+        });
+        
+        // 确认密码验证
+        confirmPasswordInput.addEventListener('input', function() {
+            const confirmPassword = this.value;
+            const password = passwordInput.value;
+            
+            if (confirmPassword === password && confirmPassword.length >= 6) {
+                this.classList.add('validation-passed');
+                this.classList.remove('validation-failed');
+            } else {
+                this.classList.add('validation-failed');
+                this.classList.remove('validation-passed');
+            }
+        });
+        
+        // 表单提交验证
+        document.getElementById('registerForm').addEventListener('submit', function(event) {
+            const username = usernameInput.value;
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            let hasError = false;
+            
+            // 用户名验证
+            if (username.length < 3 || username.length > 20) {
+                alert('用户名长度必须在3-20个字符之间');
+                hasError = true;
+            } else if (!/^[a-zA-Z0-9]+$/.test(username)) {
+                alert('用户名只能包含字母和数字');
+                hasError = true;
+            }
+            
+            // 密码验证
+            if (password.length < 6) {
+                alert('密码长度不能少于6个字符');
+                hasError = true;
+            } else if (password !== confirmPassword) {
+                alert('两次输入的密码不一致');
+                hasError = true;
+            }
+            
+            if (hasError) {
+                event.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html> 
